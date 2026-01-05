@@ -109,4 +109,10 @@ fn main() {
     tabel.delete_kemunculan_baris("Id", TipeBaris::Int(3));
 
     show(&tabel);
+
+    tabel.add_kolom(&[
+        Kolom::new("Alamat", TipeKolom::Str),
+        Kolom::new("Status", TipeKolom::Str),
+    ]);
+    show(&tabel);
 }
