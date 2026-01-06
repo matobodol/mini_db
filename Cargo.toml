@@ -7,3 +7,6 @@ edition = "2024"
 prettytable = "0.10"
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["serde"] }
+
+rustyline = "17"
+serde_json = "1.0"  # kalau nanti mau simpan/load tabel ke JSON

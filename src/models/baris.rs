@@ -16,7 +16,7 @@ pub struct Baris {
 }
 
 impl Baris {
-    pub fn new(tipe: &[TipeBaris]) -> Self {
+    pub fn new(tipe: Vec<TipeBaris>) -> Self {
         Self {
             tipe: tipe.to_vec(),
         }

@@ -23,58 +23,73 @@ impl Tabel {
         }
     }
 
+    pub fn show(&self) {
+        println!("\nproject: minidb row-oriented.");
+        show(self);
+    }
+
     // set primary key
-    pub fn set_primary_key(&mut self, pk: &str) {
-        set_primary(self, pk).unwrap();
+    pub fn set_primary_key(&mut self, pk: &str) -> Result<(), String> {
+        set_primary(self, pk)?;
+
+        Ok(())
     }
 
     // add kolom
-    pub fn add_kolom(&mut self, kolom: &[Kolom]) {
-        let kolom = kolom.to_vec();
-        for v in kolom {
-            add_kolom(self, &v.nama, v.tipe).unwrap();
-        }
+    pub fn add_kolom(&mut self, kolom: Vec<Kolom>) -> Result<(), String> {
+        add_kolom(self, kolom)?;
+
+        Ok(())
     }
 
     // insert baris
-    pub fn add_baris(&mut self, baris: &[Baris]) {
+    pub fn add_baris(&mut self, baris: Vec<Baris>) -> Result<(), String> {
         let baris = baris.to_vec();
         for row in baris {
-            insert_baris(self, row).unwrap();
+            insert_baris(self, row)?;
         }
+
+        Ok(())
     }
 
     // delete kolom (multyple)
-    pub fn delete_kolom(&mut self, kolom: &[&str]) {
-        let removed = delete_kolom(self, kolom).unwrap();
-        println!("Kolom removed..");
+    pub fn delete_kolom(&mut self, kolom: Vec<&str>) -> Result<(), String> {
+        let removed = delete_kolom(self, kolom)?;
+        println!("\nKolom removed..");
         show(&kolom_to_tabel(removed));
+
+        Ok(())
     }
 
     // delete satu baris (kemunculan pertama)
-    pub fn delete_baris(&mut self, kolom: &str, nilai: TipeBaris) {
-        let removed = delete_baris(self, kolom, nilai).unwrap();
-        println!("Baris removed..");
+    pub fn delete_baris(&mut self, kolom: &str, nilai: TipeBaris) -> Result<(), String> {
+        let removed = delete_baris(self, kolom, nilai)?;
+        println!("\nBaris removed..");
         show(&baris_to_tabel(vec![removed]));
+
+        Ok(())
     }
 
     // delete baris semua kemunculan
-    pub fn delete_kemunculan_baris(&mut self, kolom: &str, nilai: TipeBaris) {
-        let removed = delete_kemunculan_baris(self, kolom, &nilai).unwrap();
-        println!("Baris removed..");
+    pub fn delete_kemunculan_baris(&mut self, kolom: &str, nilai: TipeBaris) -> Result<(), String> {
+        let removed = delete_kemunculan_baris(self, kolom, &nilai)?;
+        println!("\nBaris removed..");
         show(&baris_to_tabel(removed));
+
+        Ok(())
     }
 
     pub fn update_nilai(
         &mut self,
-        where_kolom: &str,
-        where_nilai: TipeBaris,
+        select_kolom: &str,
+        select_nilai: TipeBaris,
         target_kolom: &str,
-        target_nilai: TipeBaris,
-    ) {
-        let changed =
-            update_nilai(self, where_kolom, where_nilai, target_kolom, target_nilai).unwrap();
-        println!("Baris changed..");
+        new_nilai: TipeBaris,
+    ) -> Result<(), String> {
+        let changed = update_nilai(self, select_kolom, select_nilai, target_kolom, new_nilai)?;
+        println!("\nBaris changed in Column: {}..", target_kolom);
         show(&baris_to_tabel(changed));
+
+        Ok(())
     }
 }

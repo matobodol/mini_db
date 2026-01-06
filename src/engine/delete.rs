@@ -4,8 +4,7 @@ use crate::*;
  * HAPUS KOLOM
  */
 
-pub fn delete_kolom(tabel: &mut Tabel, klm: &[&str]) -> Result<Vec<Kolom>, String> {
-    let klm = klm.to_vec();
+pub fn delete_kolom(tabel: &mut Tabel, klm: Vec<&str>) -> Result<Vec<Kolom>, String> {
     let mut removed = Vec::new();
 
     for kolom in klm {

@@ -1,16 +1,26 @@
-use crate::{Kolom, Tabel, TipeBaris, TipeKolom, core_any_kolom, core_position_kolom};
+use crate::{Kolom, Tabel, TipeBaris, core_any_kolom, engine::flag_switcher};
 
-pub fn add_kolom(tabel: &mut Tabel, nama: &str, tipe: TipeKolom) -> Result<(), String> {
-    if core_any_kolom(tabel, |k| k.nama == nama) {
-        return Err("DuplicateKolomName".to_string());
-    };
+pub fn add_kolom(tabel: &mut Tabel, kolom: Vec<Kolom>) -> Result<(), String> {
+    // VALIDASI KOLOM
 
-    let kolom = Kolom::new(nama, tipe);
+    for kol in kolom {
+        // cek nama kolom duplicate
+        if core_any_kolom(tabel, |k| k.nama == kol.nama) {
+            return Err("DuplicateKolomName".to_string());
+        };
 
-    tabel.kolom.push(kolom);
-    let _ = core_position_kolom(tabel, |k| k.nama == nama)
-        .ok_or_else(|| "Gagal menambah kolom".to_string())?;
+        if kol.primary_key {
+            flag_switcher(tabel);
+        }
 
+        tabel.kolom.push(kol.clone());
+    }
+
+    // buat kolom
+    // tabel.kolom.extend(kolom.to_vec());
+
+    // tambah nilai null
+    // pada baris sebelumnya yg kosong
     for len in &mut tabel.baris {
         if len.tipe.len() < tabel.kolom.len() {
             len.tipe.push(TipeBaris::Null);

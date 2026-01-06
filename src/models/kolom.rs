@@ -24,4 +24,9 @@ impl Kolom {
             primary_key: false,
         }
     }
+
+    pub fn set_primary_key(mut self) -> Self {
+        self.primary_key = true;
+        self
+    }
 }
