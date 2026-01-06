@@ -2,6 +2,7 @@ use chrono::NaiveDate;
 use mini_db::{Baris, Kolom, Tabel, TipeBaris, TipeKolom, display::show};
 
 fn main() {
+    // EKSPERIMEN BRANCH
     let mut tabel = Tabel::new();
 
     tabel.add_kolom(&[
