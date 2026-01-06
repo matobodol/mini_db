@@ -14,6 +14,7 @@ pub struct Kolom {
     pub nama: String,
     pub tipe: TipeKolom,
     pub primary_key: bool,
+    /* flag: Flag {primarykey: bool, increment: bool} */
 }
 impl Kolom {
     pub fn new(nama: &str, tipe: TipeKolom) -> Self {

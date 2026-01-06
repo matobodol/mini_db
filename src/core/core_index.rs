@@ -39,3 +39,10 @@ where
 {
     tabel.baris.iter().position(f)
 }
+
+pub fn core_find_baris<F>(tabel: &Tabel, f: F) -> Option<&Baris>
+where
+    F: Fn(&Baris) -> bool,
+{
+    tabel.baris.iter().find(|b| f(b))
+}

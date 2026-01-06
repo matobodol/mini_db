@@ -14,6 +14,7 @@ pub enum TipeBaris {
 pub struct Baris {
     pub tipe: Vec<TipeBaris>,
 }
+
 impl Baris {
     pub fn new(tipe: &[TipeBaris]) -> Self {
         Self {

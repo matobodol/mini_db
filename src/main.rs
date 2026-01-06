@@ -1,4 +1,5 @@
-use mini_db::{Baris, Kolom, Tabel, TipeBaris, TipeKolom, display::show, engine::insert_baris};
+use chrono::NaiveDate;
+use mini_db::{Baris, Kolom, Tabel, TipeBaris, TipeKolom, display::show};
 
 fn main() {
     let mut tabel = Tabel::new();
@@ -13,6 +14,7 @@ fn main() {
                 variant: vec!["Active".into(), "Pending".into(), "Progress".into()],
             },
         ),
+        Kolom::new("Tanggal", TipeKolom::Date),
     ]);
 
     tabel.set_primary_key("Id");
@@ -25,6 +27,7 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Active".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
         Baris::new(&[
             TipeBaris::Int(2),
@@ -33,6 +36,7 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Active".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
         Baris::new(&[
             TipeBaris::Int(3),
@@ -41,6 +45,7 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Active".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
         Baris::new(&[
             TipeBaris::Int(3),
@@ -49,6 +54,7 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Active".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
         Baris::new(&[
             TipeBaris::Int(3),
@@ -57,13 +63,13 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Active".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
     ]);
 
     /* TES LOGIC */
 
-    insert_baris(
-        &mut tabel,
+    tabel.add_baris(&[
         Baris::new(&[
             TipeBaris::Int(77),
             TipeBaris::Str("Romeo Gadungan".into()),
@@ -71,11 +77,8 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Active".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
-    )
-    .unwrap();
-    insert_baris(
-        &mut tabel,
         Baris::new(&[
             TipeBaris::Int(77),
             TipeBaris::Str("Juliet Gadungan".into()),
@@ -83,11 +86,8 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Progress".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
-    )
-    .unwrap();
-    insert_baris(
-        &mut tabel,
         Baris::new(&[
             TipeBaris::Int(77),
             TipeBaris::Str("Juliet Gadungan".into()),
@@ -95,24 +95,41 @@ fn main() {
             TipeBaris::Enum {
                 variant: "Pending".into(),
             },
+            TipeBaris::Date(NaiveDate::parse_from_str("2026-1-5".into(), "%Y-%m-%d").unwrap()),
         ]),
-    )
-    .unwrap();
+    ]);
+
     show(&tabel);
 
-    // hapus baris kolom id n dengan nilai x
-    tabel.delete_baris("Id", TipeBaris::Int(1));
-
     // hapus kolom
-    tabel.delete_kolom(&["Alamat", "Enum"]);
+    tabel.delete_kolom(&["Alamat"]);
+
+    // hapus baris kolom Id dengan nilai x
+    // hanya menghapus kemunculan pertama
+    tabel.delete_baris("Id", TipeBaris::Int(1));
 
     tabel.delete_kemunculan_baris("Id", TipeBaris::Int(3));
 
     show(&tabel);
 
-    tabel.add_kolom(&[
-        Kolom::new("Alamat", TipeKolom::Str),
-        Kolom::new("Status", TipeKolom::Str),
-    ]);
+    // update nilai
+    tabel.update_nilai(
+        "Nama",
+        TipeBaris::Str("joni".to_string()),
+        "Enum",
+        TipeBaris::Enum {
+            variant: "Pending".into(),
+        },
+    );
+
     show(&tabel);
+
+    // tinggal buat lagic update nilai...
+    // validasi tipe kolom dan baris
+    // schema primary-key
+    // validasi duplicat kolom primary
+    // enum error
+    // parse raw dto + validasi
+    // menu interaktif
+    // save & load to file
 }

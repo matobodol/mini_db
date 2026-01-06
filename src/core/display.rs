@@ -1,8 +1,8 @@
-use prettytable::{Attr, Cell, Row, Table, format};
+use prettytable::{Attr, Cell, Row, Table, color, format};
 
 use crate::{Baris, Kolom, Tabel, TipeBaris};
 
-fn tipe_to_str(tipe: &TipeBaris) -> (String, &str) {
+fn mapper(tipe: &TipeBaris) -> (String, &str) {
     let (l, c, r) = ("l", "c", "r");
 
     match tipe {
@@ -47,18 +47,23 @@ pub fn show(tabel: &Tabel) {
 }
 
 //print struct kolom
-pub fn register_kolom(pt: Table, kolom: &Vec<Kolom>) -> Table {
+fn register_kolom(pt: Table, kolom: &Vec<Kolom>) -> Table {
     let mut pt = pt;
 
     let cell: Vec<Cell> = kolom
         .iter()
         .map(|k| {
-            let s = match k.primary_key {
-                true => &format!("*{}", &k.nama),
-                false => &k.nama,
-            };
-
-            Cell::new(s).style_spec("c").with_style(Attr::Bold)
+            match k.primary_key {
+                true => {
+                    Cell::new(&format!("*{}", &k.nama))
+                        .style_spec("c")
+                        .with_style(Attr::Bold)
+                        // .with_style(Attr::Italic(true))
+                        // .with_style(Attr::Underline(true))
+                        .with_style(Attr::ForegroundColor(color::YELLOW))
+                }
+                false => Cell::new(&k.nama).style_spec("c").with_style(Attr::Bold),
+            }
         })
         .collect();
     pt.add_row(Row::new(cell));
@@ -66,7 +71,7 @@ pub fn register_kolom(pt: Table, kolom: &Vec<Kolom>) -> Table {
 }
 
 // print struct Baris
-pub fn register_baris(pt: Table, baris: &Vec<Baris>) -> Table {
+fn register_baris(pt: Table, baris: &Vec<Baris>) -> Table {
     let mut pt = pt;
 
     for v in baris {
@@ -74,7 +79,7 @@ pub fn register_baris(pt: Table, baris: &Vec<Baris>) -> Table {
             .tipe
             .iter()
             .map(|k| {
-                let tipe = tipe_to_str(&k);
+                let tipe = mapper(&k);
                 Cell::new(&tipe.0).style_spec(tipe.1)
             })
             .collect();
