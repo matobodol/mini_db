@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Baris, Kolom, TipeBaris,
+    Baris, Kolom, TipeBaris, core_flag_kolom, core_position_kolom,
     display::{baris_to_tabel, kolom_to_tabel, show},
     engine::{
         add_kolom, delete_baris, delete_kemunculan_baris, delete_kolom, insert_baris, set_primary,
-        update_nilai,
+        update_nama_kolom, update_nilai,
     },
 };
 
@@ -89,6 +89,12 @@ impl Tabel {
         let changed = update_nilai(self, select_kolom, select_nilai, target_kolom, new_nilai)?;
         println!("\nBaris changed in Column: {}..", target_kolom);
         show(&baris_to_tabel(changed));
+
+        Ok(())
+    }
+
+    pub fn update_kolom_name(&mut self, select_kolom: &str, new_name: &str) -> Result<(), String> {
+        update_nama_kolom(self, select_kolom, new_name)?;
 
         Ok(())
     }

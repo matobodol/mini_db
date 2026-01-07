@@ -31,7 +31,18 @@ fn load_from_file(path: &str) -> Result<Tabel, String> {
     let tabel: Tabel = serde_json::from_str(&data).map_err(|e| e.to_string())?;
     Ok(tabel)
 }
-
+fn opsi() {
+    println!("\n=== MiniDB Menu ===");
+    println!("1. Tambah Kolom");
+    println!("2. Set Primary Key");
+    println!("3. Tambah Baris");
+    println!("4. Hapus Baris (kemunculan pertama)");
+    println!("5. Hapus Baris (semua kemunculan)");
+    println!("6. Hapus Kolom");
+    println!("7. Update Nilai Baris");
+    println!("8. Update Nama Kolom");
+    println!("0. Keluar");
+}
 pub fn run() {
     let data_file = default_data_file();
     let data_file = &data_file.to_string_lossy();
@@ -50,26 +61,16 @@ pub fn run() {
     };
 
     loop {
-        println!("\n=== MiniDB Menu ===");
-        println!("1. Tampilkan Tabel");
-        println!("2. Tambah Kolom");
-        println!("3. Set Primary Key");
-        println!("4. Tambah Baris");
-        println!("5. Hapus Baris (kemunculan pertama)");
-        println!("6. Hapus Baris (semua kemunculan)");
-        println!("7. Hapus Kolom");
-        println!("8. Update Nilai Baris");
-        println!("0. Keluar");
-
         let input = rl.readline("Pilih menu: ").unwrap();
         match input.trim() {
+            "menu" | "opsi" => opsi(),
             "0" => {
                 save_to_file(&tabel, data_file).unwrap();
                 println!("Keluar..");
                 break;
             }
-            "1" => tabel.show(),
-            "2" => {
+            "" => tabel.show(),
+            "1" => {
                 // Tambah kolom
                 let nama = rl.readline("Nama kolom: ").unwrap();
                 let tipe_str = rl
@@ -105,7 +106,7 @@ pub fn run() {
                     save_to_file(&tabel, data_file).unwrap();
                 }
             }
-            "3" => {
+            "2" => {
                 let pk = rl.readline("Nama kolom sebagai primary key: ").unwrap();
                 match tabel.set_primary_key(&pk) {
                     Ok(_) => {
@@ -115,7 +116,7 @@ pub fn run() {
                     Err(e) => println!("Gagal set primary key: {}", e),
                 }
             }
-            "4" => {
+            "3" => {
                 // Tambah baris
                 if tabel.kolom.is_empty() {
                     println!("Belum ada kolom, tambahkan kolom dulu!");
@@ -142,7 +143,7 @@ pub fn run() {
                     save_to_file(&tabel, data_file).unwrap();
                 }
             }
-            "5" => {
+            "4" => {
                 let kolom = rl.readline("Nama kolom: ").unwrap();
                 let nilai = rl.readline("Nilai baris: ").unwrap();
                 let tipe_kolom = tabel.kolom.iter().find(|c| c.nama == kolom);
@@ -156,7 +157,7 @@ pub fn run() {
                     println!("Kolom tidak ditemukan!");
                 }
             }
-            "6" => {
+            "5" => {
                 let kolom = rl.readline("Nama kolom: ").unwrap();
                 let nilai = rl.readline("Nilai baris: ").unwrap();
                 let tipe_kolom = tabel.kolom.iter().find(|c| c.nama == kolom);
@@ -170,7 +171,7 @@ pub fn run() {
                     println!("Kolom tidak ditemukan!");
                 }
             }
-            "7" => {
+            "6" => {
                 let kolom_input = rl
                     .readline("Nama kolom yang akan dihapus, pisahkan koma: ")
                     .unwrap();
@@ -180,7 +181,7 @@ pub fn run() {
                 }
                 save_to_file(&tabel, data_file).unwrap();
             }
-            "8" => {
+            "7" => {
                 if tabel.kolom.is_empty() {
                     println!("Belum ada kolom, tambahkan kolom dulu!");
                     continue;
@@ -219,38 +220,19 @@ pub fn run() {
                 }
                 save_to_file(&tabel, data_file).unwrap();
             }
+            "8" => {
+                let select_kolom = rl.readline("select kolom: ").unwrap();
+                let new_name = rl.readline("new_name: ").unwrap();
+
+                match tabel.update_kolom_name(&select_kolom, &new_name) {
+                    Ok(_) => println!("Berhasil update nama kolom."),
+                    Err(e) => println!("Gagal update nama kolom. {}", e),
+                }
+            }
             _ => println!("Pilihan tidak valid!"),
         }
     }
 }
-
-/// Fungsi untuk parse input string user ke tipe `TipeBaris` sesuai tipe kolom
-// fn parse_input(input: &str, tipe: &TipeKolom) -> TipeBaris {
-//     match tipe {
-//         TipeKolom::Int => input
-//             .parse::<i64>()
-//             .map(TipeBaris::Int)
-//             .unwrap_or(TipeBaris::Null),
-//         TipeKolom::Float => input
-//             .parse::<f64>()
-//             .map(TipeBaris::Float)
-//             .unwrap_or(TipeBaris::Null),
-//         TipeKolom::Str => TipeBaris::Str(input.to_string()),
-//         TipeKolom::Date => NaiveDate::parse_from_str(input, "%Y-%m-%d")
-//             .map(TipeBaris::Date)
-//             .unwrap_or(TipeBaris::Null),
-//         TipeKolom::Enum { variant } => {
-//             if variant.contains(&input.to_string()) {
-//                 TipeBaris::Enum {
-//                     variant: input.to_string(),
-//                 }
-//             } else {
-//                 println!("Nilai enum tidak valid, di-set Null.");
-//                 TipeBaris::Null
-//             }
-//         }
-//     }
-// }
 
 fn parse_input(input: &str, tipe: &TipeKolom) -> TipeBaris {
     match tipe {

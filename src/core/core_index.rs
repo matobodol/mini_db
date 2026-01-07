@@ -1,6 +1,14 @@
 use crate::{Baris, Kolom, Tabel, TipeBaris};
 
 // ==== KOLOM
+// dipakai untuk mengubah terhadap field kolom
+pub fn core_flag_kolom<F>(tabel: &mut Tabel, f: F)
+where
+    F: Fn(&mut Kolom),
+{
+    tabel.kolom.iter_mut().for_each(f);
+}
+
 // dipakai untuk membuat kolom baru
 pub fn core_any_kolom<F>(tabel: &Tabel, f: F) -> bool
 where
