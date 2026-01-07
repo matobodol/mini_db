@@ -1,11 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Baris, Kolom, TipeBaris, core_flag_kolom, core_position_kolom,
+    Baris, Kolom, TipeBaris,
     display::{baris_to_tabel, kolom_to_tabel, show},
     engine::{
         add_kolom, delete_baris, delete_kemunculan_baris, delete_kolom, insert_baris, set_primary,
-        update_nama_kolom, update_nilai,
+        update_nama_kolom, update_nilai, update_null,
     },
 };
 
@@ -21,6 +21,12 @@ impl Tabel {
             kolom: Vec::new(),
             baris: Vec::new(),
         }
+    }
+
+    pub fn update_null(&mut self, nilai: TipeBaris) -> Result<(), String> {
+        update_null(self, nilai)?;
+
+        Ok(())
     }
 
     pub fn show(&self) {

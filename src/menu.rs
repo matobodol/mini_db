@@ -41,6 +41,7 @@ fn opsi() {
     println!("6. Hapus Kolom");
     println!("7. Update Nilai Baris");
     println!("8. Update Nama Kolom");
+    println!("9. Update Null ");
     println!("0. Keluar");
 }
 pub fn run() {
@@ -50,14 +51,8 @@ pub fn run() {
     let mut rl: Editor<(), DefaultHistory> = Editor::new().unwrap();
 
     let mut tabel = match load_from_file(data_file) {
-        Ok(t) => {
-            // println!("Tabel berhasil diload dari '{}'", DATA_FILE);
-            t
-        }
-        Err(_) => {
-            // println!("Tidak ada file data, membuat tabel baru.");
-            Tabel::new()
-        }
+        Ok(file_is_loaded) => file_is_loaded,
+        Err(_) => Tabel::new(),
     };
 
     loop {
@@ -227,6 +222,23 @@ pub fn run() {
                 match tabel.update_kolom_name(&select_kolom, &new_name) {
                     Ok(_) => println!("Berhasil update nama kolom."),
                     Err(e) => println!("Gagal update nama kolom. {}", e),
+                }
+            }
+            "9" => {
+                for baris in tabel.baris.iter_mut() {
+                    let index_baris = baris.tipe.iter().position(|k| k == &TipeBaris::Null);
+                    if let Some(v) = index_baris {
+                        let nama_kolom = &tabel.kolom[v].nama;
+                        let tipe_kolom = &tabel.kolom[v].tipe;
+                        let index_kolom = &tabel.kolom[v].tipe;
+
+                        let prompt = format!("{}: ({:?}: )", nama_kolom, tipe_kolom);
+                        let input = rl.readline(&prompt).unwrap();
+
+                        let nilai = parse_input(&input, &index_kolom);
+
+                        baris.tipe[v] = nilai.clone();
+                    }
                 }
             }
             _ => println!("Pilihan tidak valid!"),
