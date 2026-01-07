@@ -11,8 +11,8 @@ pub fn add_kolom(tabel: &mut Tabel, kolom: Vec<Kolom>) -> Result<(), String> {
 
         // cek primary_key yg aktif saat ini
         // dan ubah ke false
-        if kol.primary_key {
-            core_flag_kolom(tabel, |k| k.primary_key = false);
+        if kol.flag.primary_key {
+            core_flag_kolom(tabel, |k| k.flag.primary_key = false);
         }
 
         // push kolom baru

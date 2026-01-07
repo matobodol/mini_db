@@ -1,8 +1,7 @@
-use chrono::NaiveDate;
 use rustyline::Editor;
 use rustyline::history::DefaultHistory;
 
-use crate::{Baris, Kolom, Tabel, TipeBaris, TipeKolom};
+use crate::{Baris, Kolom, Tabel, TipeBaris, parse_to_tipe_baris, parse_to_tipe_kolom};
 use std::fs::File;
 use std::io::Write;
 
@@ -42,7 +41,7 @@ fn opsi() {
     println!("7. Update Nilai Baris");
     println!("8. Update Nama Kolom");
     println!("9. Update Null ");
-    println!("0. Keluar");
+    println!("0. Keluar\n");
 }
 pub fn run() {
     let data_file = default_data_file();
@@ -56,15 +55,17 @@ pub fn run() {
     };
 
     loop {
-        let input = rl.readline("Pilih menu: ").unwrap();
+        let input = rl.readline("mini_db >> ").unwrap();
         match input.trim() {
-            "menu" | "opsi" => opsi(),
+            "" => tabel.show(),
+            "reset" => tabel.reset_baris(),
+            "hard-reset" => tabel.reset_tabel(),
+            "m" | "menu" | "opsi" => opsi(),
             "0" => {
                 save_to_file(&tabel, data_file).unwrap();
                 println!("Keluar..");
                 break;
             }
-            "" => tabel.show(),
             "1" => {
                 // Tambah kolom
                 let nama = rl.readline("Nama kolom: ").unwrap();
@@ -72,23 +73,10 @@ pub fn run() {
                     .readline("Tipe kolom (int/float/str/date/enum): ")
                     .unwrap();
 
-                let tipe = match tipe_str.trim().to_lowercase().as_str() {
-                    "int" => TipeKolom::Int,
-                    "float" => TipeKolom::Float,
-                    "str" => TipeKolom::Str,
-                    "date" => TipeKolom::Date,
-                    "enum" => {
-                        let variants_input = rl
-                            .readline("Masukkan varian enum, pisahkan dengan koma: ")
-                            .unwrap();
-                        let v: Vec<String> = variants_input
-                            .split(',')
-                            .map(|s| s.trim().to_string())
-                            .collect();
-                        TipeKolom::Enum { variant: v }
-                    }
-                    _ => {
-                        println!("Tipe tidak valid!");
+                let tipe = match parse_to_tipe_kolom(&tipe_str) {
+                    Ok(v) => v,
+                    Err(e) => {
+                        println!("{}", e);
                         continue;
                     }
                 };
@@ -126,7 +114,13 @@ pub fn run() {
                             kolom.nama, kolom.tipe
                         ))
                         .unwrap();
-                    let nilai = parse_input(&input, &kolom.tipe);
+                    let nilai = match parse_to_tipe_baris(&input, &kolom.tipe) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            println!("{}", e);
+                            TipeBaris::Null
+                        }
+                    };
                     nilai_baris.push(nilai);
                 }
 
@@ -143,7 +137,13 @@ pub fn run() {
                 let nilai = rl.readline("Nilai baris: ").unwrap();
                 let tipe_kolom = tabel.kolom.iter().find(|c| c.nama == kolom);
                 if let Some(k) = tipe_kolom {
-                    let baris_nilai = parse_input(&nilai, &k.tipe);
+                    let baris_nilai = match parse_to_tipe_baris(&nilai, &k.tipe) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            println!("{}", e);
+                            TipeBaris::Null
+                        }
+                    };
                     if let Err(e) = tabel.delete_baris(&kolom, baris_nilai) {
                         println!("Gagal hapus baris: {}", e);
                     }
@@ -157,7 +157,13 @@ pub fn run() {
                 let nilai = rl.readline("Nilai baris: ").unwrap();
                 let tipe_kolom = tabel.kolom.iter().find(|c| c.nama == kolom);
                 if let Some(k) = tipe_kolom {
-                    let baris_nilai = parse_input(&nilai, &k.tipe);
+                    let baris_nilai = match parse_to_tipe_baris(&nilai, &k.tipe) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            println!("{}", e);
+                            TipeBaris::Null
+                        }
+                    };
                     if let Err(e) = tabel.delete_kemunculan_baris(&kolom, baris_nilai) {
                         println!("Gagal hapus baris: {}", e);
                     }
@@ -189,14 +195,27 @@ pub fn run() {
                     let select_nilai_input = rl
                         .readline("Nilai yang dicari di kolom tersebut: ")
                         .unwrap();
-                    let select_nilai = parse_input(&select_nilai_input, &kol.tipe);
+                    let select_nilai = match parse_to_tipe_baris(&select_nilai_input, &kol.tipe) {
+                        Ok(v) => v,
+                        Err(e) => {
+                            println!("{}", e);
+                            TipeBaris::Null
+                        }
+                    };
 
                     let target_kolom = rl.readline("Nama kolom yang akan diubah: ").unwrap();
                     let target_kol_ref = tabel.kolom.iter().find(|c| c.nama == target_kolom);
 
                     if let Some(target_kol) = target_kol_ref {
                         let new_nilai_input = rl.readline("Masukkan nilai baru: ").unwrap();
-                        let new_nilai = parse_input(&new_nilai_input, &target_kol.tipe);
+                        let new_nilai =
+                            match parse_to_tipe_baris(&new_nilai_input, &target_kol.tipe) {
+                                Ok(v) => v,
+                                Err(e) => {
+                                    println!("{}", e);
+                                    TipeBaris::Null
+                                }
+                            };
 
                         match tabel.update_nilai(
                             &select_kolom,
@@ -226,56 +245,29 @@ pub fn run() {
             }
             "9" => {
                 for baris in tabel.baris.iter_mut() {
-                    let index_baris = baris.tipe.iter().position(|k| k == &TipeBaris::Null);
-                    if let Some(v) = index_baris {
-                        let nama_kolom = &tabel.kolom[v].nama;
-                        let tipe_kolom = &tabel.kolom[v].tipe;
-                        let index_kolom = &tabel.kolom[v].tipe;
+                    for (i, tipe) in baris.tipe.iter_mut().enumerate() {
+                        if tipe != &TipeBaris::Null {
+                            continue;
+                        }
 
-                        let prompt = format!("{}: ({:?}: )", nama_kolom, tipe_kolom);
+                        let kolom = &tabel.kolom[i];
+
+                        let prompt = format!("{}: ({:?}): ", kolom.nama, kolom.tipe);
                         let input = rl.readline(&prompt).unwrap();
 
-                        let nilai = parse_input(&input, &index_kolom);
+                        let nilai = match parse_to_tipe_baris(&input, &kolom.tipe) {
+                            Ok(v) => v,
+                            Err(e) => {
+                                println!("{}", e);
+                                TipeBaris::Null
+                            }
+                        };
 
-                        baris.tipe[v] = nilai.clone();
+                        *tipe = nilai;
                     }
                 }
             }
-            _ => println!("Pilihan tidak valid!"),
-        }
-    }
-}
-
-fn parse_input(input: &str, tipe: &TipeKolom) -> TipeBaris {
-    match tipe {
-        TipeKolom::Int => input
-            .parse::<i64>()
-            .map(TipeBaris::Int)
-            .unwrap_or(TipeBaris::Null),
-        TipeKolom::Float => input
-            .parse::<f64>()
-            .map(TipeBaris::Float)
-            .unwrap_or(TipeBaris::Null),
-        TipeKolom::Str => {
-            let trimmed = input.trim();
-            if trimmed.is_empty() {
-                TipeBaris::Null
-            } else {
-                TipeBaris::Str(trimmed.to_string())
-            }
-        }
-        TipeKolom::Date => NaiveDate::parse_from_str(input, "%Y-%m-%d")
-            .map(TipeBaris::Date)
-            .unwrap_or(TipeBaris::Null),
-        TipeKolom::Enum { variant } => {
-            if variant.contains(&input.to_string()) {
-                TipeBaris::Enum {
-                    variant: input.to_string(),
-                }
-            } else {
-                println!("Nilai enum tidak valid, di-set Null.");
-                TipeBaris::Null
-            }
+            _ => println!("Pilihan tidak valid!\n"),
         }
     }
 }

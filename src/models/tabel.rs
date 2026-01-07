@@ -23,6 +23,14 @@ impl Tabel {
         }
     }
 
+    pub fn reset_tabel(&mut self) {
+        self.kolom = Vec::new();
+        self.baris = Vec::new();
+    }
+    pub fn reset_baris(&mut self) {
+        self.baris = Vec::new();
+    }
+
     pub fn update_null(&mut self, nilai: TipeBaris) -> Result<(), String> {
         update_null(self, nilai)?;
 

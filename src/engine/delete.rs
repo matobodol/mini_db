@@ -11,7 +11,7 @@ pub fn delete_kolom(tabel: &mut Tabel, klm: Vec<&str>) -> Result<Vec<Kolom>, Str
         let index_kolom = core_position_kolom(tabel, |k| k.nama == kolom)
             .ok_or_else(|| "KolomNotFound".to_string())?;
 
-        if core_any_kolom(tabel, |k| k.nama == kolom && k.primary_key) {
+        if core_any_kolom(tabel, |k| k.nama == kolom && k.flag.primary_key) {
             return Err("ThisKolomIsPrimaryKey".into());
         }
 

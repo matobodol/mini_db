@@ -53,7 +53,7 @@ fn register_kolom(pt: Table, kolom: &Vec<Kolom>) -> Table {
     let cell: Vec<Cell> = kolom
         .iter()
         .map(|k| {
-            match k.primary_key {
+            match k.flag.primary_key {
                 true => {
                     Cell::new(&format!("*{}", &k.nama))
                         .style_spec("c")
