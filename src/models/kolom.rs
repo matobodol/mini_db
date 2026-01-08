@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -9,12 +7,6 @@ pub enum TipeKolom {
     Float,
     Date,
     Enum { variant: Vec<String> },
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Header {
-    pub kolom: Vec<Kolom>,
-    pub hash: Option<HashMap<String, usize>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -49,8 +41,7 @@ impl Kolom {
         }
     }
 
-    pub fn set_primary_key(mut self) -> Self {
+    pub fn set_primary_key(mut self) {
         self.flag.primary_key = true;
-        self
     }
 }

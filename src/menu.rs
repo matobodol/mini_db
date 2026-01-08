@@ -82,7 +82,7 @@ pub fn run() {
                 };
 
                 let kolom = Kolom::new(&nama, tipe);
-                if let Err(e) = tabel.add_kolom(vec![kolom]) {
+                if let Err(e) = tabel.add_kolom(kolom) {
                     println!("Gagal menambah kolom: {}", e);
                 } else {
                     println!("Kolom berhasil ditambah!");
@@ -134,9 +134,9 @@ pub fn run() {
             }
             "4" => {
                 let kolom = rl.readline("Nama kolom: ").unwrap();
-                let nilai = rl.readline("Nilai baris: ").unwrap();
                 let tipe_kolom = tabel.kolom.iter().find(|c| c.nama == kolom);
                 if let Some(k) = tipe_kolom {
+                    let nilai = rl.readline("Nilai baris: ").unwrap();
                     let baris_nilai = match parse_to_tipe_baris(&nilai, &k.tipe) {
                         Ok(v) => v,
                         Err(e) => {
@@ -149,14 +149,14 @@ pub fn run() {
                     }
                     save_to_file(&tabel, data_file).unwrap();
                 } else {
-                    println!("Kolom tidak ditemukan!");
+                    println!("Kolom '{}' tidak ditemukan!", kolom);
                 }
             }
             "5" => {
                 let kolom = rl.readline("Nama kolom: ").unwrap();
-                let nilai = rl.readline("Nilai baris: ").unwrap();
                 let tipe_kolom = tabel.kolom.iter().find(|c| c.nama == kolom);
                 if let Some(k) = tipe_kolom {
+                    let nilai = rl.readline("Nilai baris: ").unwrap();
                     let baris_nilai = match parse_to_tipe_baris(&nilai, &k.tipe) {
                         Ok(v) => v,
                         Err(e) => {
@@ -164,12 +164,14 @@ pub fn run() {
                             TipeBaris::Null
                         }
                     };
+
                     if let Err(e) = tabel.delete_kemunculan_baris(&kolom, baris_nilai) {
                         println!("Gagal hapus baris: {}", e);
+
+                        save_to_file(&tabel, data_file).unwrap();
                     }
-                    save_to_file(&tabel, data_file).unwrap();
                 } else {
-                    println!("Kolom tidak ditemukan!");
+                    println!("Kolom '{}' tidak ditemukan!", kolom);
                 }
             }
             "6" => {
@@ -188,14 +190,12 @@ pub fn run() {
                     continue;
                 }
 
-                let select_kolom = rl.readline("Nama kolom untuk mencari baris: ").unwrap();
-                let select_kolom_ref = tabel.kolom.iter().find(|c| c.nama == select_kolom);
+                let set_kolom = rl.readline("Set kolom yg mau diubah nilainya: ").unwrap();
+                let select_kolom_ref = tabel.kolom.iter().find(|c| c.nama == set_kolom);
 
                 if let Some(kol) = select_kolom_ref {
-                    let select_nilai_input = rl
-                        .readline("Nilai yang dicari di kolom tersebut: ")
-                        .unwrap();
-                    let select_nilai = match parse_to_tipe_baris(&select_nilai_input, &kol.tipe) {
+                    let select_nilai_input = rl.readline("Set nilai baru: ").unwrap();
+                    let set_nilai = match parse_to_tipe_baris(&select_nilai_input, &kol.tipe) {
                         Ok(v) => v,
                         Err(e) => {
                             println!("{}", e);
@@ -203,12 +203,12 @@ pub fn run() {
                         }
                     };
 
-                    let target_kolom = rl.readline("Nama kolom yang akan diubah: ").unwrap();
-                    let target_kol_ref = tabel.kolom.iter().find(|c| c.nama == target_kolom);
+                    let where_kolom = rl.readline("Where kolom: ").unwrap();
+                    let target_kol_ref = tabel.kolom.iter().find(|c| c.nama == where_kolom);
 
                     if let Some(target_kol) = target_kol_ref {
-                        let new_nilai_input = rl.readline("Masukkan nilai baru: ").unwrap();
-                        let new_nilai =
+                        let new_nilai_input = rl.readline("Where nilai: ").unwrap();
+                        let where_nilai =
                             match parse_to_tipe_baris(&new_nilai_input, &target_kol.tipe) {
                                 Ok(v) => v,
                                 Err(e) => {
@@ -217,12 +217,8 @@ pub fn run() {
                                 }
                             };
 
-                        match tabel.update_nilai(
-                            &select_kolom,
-                            select_nilai,
-                            &target_kolom,
-                            new_nilai,
-                        ) {
+                        match tabel.update_nilai(&set_kolom, set_nilai, &where_kolom, &where_nilai)
+                        {
                             Ok(_) => println!("Nilai berhasil diupdate!"),
                             Err(e) => println!("Gagal update nilai: {}", e),
                         }
@@ -235,10 +231,10 @@ pub fn run() {
                 save_to_file(&tabel, data_file).unwrap();
             }
             "8" => {
-                let select_kolom = rl.readline("select kolom: ").unwrap();
-                let new_name = rl.readline("new_name: ").unwrap();
+                let set_new_name = rl.readline("Set new name: ").unwrap();
+                let where_kolom_name = rl.readline("Where kolom name: ").unwrap();
 
-                match tabel.update_kolom_name(&select_kolom, &new_name) {
+                match tabel.update_kolom_name(&set_new_name, &where_kolom_name) {
                     Ok(_) => println!("Berhasil update nama kolom."),
                     Err(e) => println!("Gagal update nama kolom. {}", e),
                 }

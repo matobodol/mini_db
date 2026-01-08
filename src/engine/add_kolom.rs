@@ -1,30 +1,23 @@
-use crate::{Kolom, Tabel, TipeBaris, core_any_kolom, core_flag_kolom, core_position_kolom};
+use crate::{Kolom, Tabel, TipeBaris};
 
-pub fn add_kolom(tabel: &mut Tabel, kolom: Vec<Kolom>) -> Result<(), String> {
-    // VALIDASI KOLOM
+use std::collections::hash_map::Entry;
 
-    for kol in kolom {
-        // cek nama kolom duplicate
-        if core_any_kolom(tabel, |k| k.nama == kol.nama) {
-            return Err("DuplicateKolomName".to_string());
-        };
+pub fn add_kolom(tabel: &mut Tabel, kolom: Kolom) -> Result<(), String> {
+    let index = tabel.kolom.len();
 
-        // cek primary_key yg aktif saat ini
-        // dan ubah ke false
-        if kol.flag.primary_key {
-            core_flag_kolom(tabel, |k| k.flag.primary_key = false);
+    match tabel.index_kolom.entry(kolom.nama.clone()) {
+        Entry::Occupied(_) => {
+            return Err("DuplicateKolomName".into());
         }
-
-        // push kolom baru
-        tabel.kolom.push(kol.clone());
+        Entry::Vacant(e) => {
+            tabel.kolom.push(kolom);
+            e.insert(index);
+        }
     }
 
-    // tambah nilai null
-    // pada baris sebelumnya yg kosong
-    for len in &mut tabel.baris {
-        if len.tipe.len() < tabel.kolom.len() {
-            len.tipe.push(TipeBaris::Null);
-        }
+    // tambah Null ke semua baris lama
+    for baris in &mut tabel.baris {
+        baris.tipe.push(TipeBaris::Null);
     }
 
     Ok(())
@@ -32,24 +25,26 @@ pub fn add_kolom(tabel: &mut Tabel, kolom: Vec<Kolom>) -> Result<(), String> {
 
 pub fn update_nama_kolom(
     tabel: &mut Tabel,
-    select_kolom: &str,
     new_name: &str,
+    select_kolom: &str,
 ) -> Result<(), String> {
-    // cek target kolom is exist
-    core_position_kolom(tabel, |k| k.nama == select_kolom)
-        .ok_or_else(|| "TargetKolomNotFound".to_string())?;
+    // ambil index kolom target dari hashmap
+    let idx = *tabel
+        .index_kolom
+        .get(select_kolom)
+        .ok_or("TargetKolomNotFound")?;
 
-    // cek dupicate new name
-    if core_any_kolom(tabel, |k| k.nama == new_name) {
-        return Err("KolomNameIsDuplicate".to_string());
+    // cek duplikat
+    if tabel.index_kolom.contains_key(new_name) {
+        return Err("KolomNameIsDuplicate".into());
     }
 
-    // update name
-    core_flag_kolom(tabel, |k| {
-        if k.nama == select_kolom.to_string() {
-            k.nama = new_name.to_string()
-        }
-    });
+    // update nama di Vec
+    tabel.kolom[idx].nama = new_name.to_string();
+
+    // rename key di HashMap (remove + insert)
+    tabel.index_kolom.remove(select_kolom);
+    tabel.index_kolom.insert(new_name.to_string(), idx);
 
     Ok(())
 }

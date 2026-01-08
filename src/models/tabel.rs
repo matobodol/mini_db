@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -12,19 +14,24 @@ use crate::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tabel {
     pub kolom: Vec<Kolom>,
+    pub index_kolom: HashMap<String, usize>,
     pub baris: Vec<Baris>,
+    pub index_pk: HashMap<String, usize>,
 }
 
 impl Tabel {
     pub fn new() -> Self {
         Self {
             kolom: Vec::new(),
+            index_kolom: HashMap::new(),
             baris: Vec::new(),
+            index_pk: HashMap::new(),
         }
     }
 
     pub fn reset_tabel(&mut self) {
         self.kolom = Vec::new();
+        self.index_kolom = HashMap::new();
         self.baris = Vec::new();
     }
     pub fn reset_baris(&mut self) {
@@ -38,6 +45,8 @@ impl Tabel {
     }
 
     pub fn show(&self) {
+        println!("kolom : {:?}", self.index_kolom);
+        println!("idx pk: {:?}", self.index_pk);
         println!("\nproject: minidb row-oriented.");
         show(self);
     }
@@ -50,7 +59,7 @@ impl Tabel {
     }
 
     // add kolom
-    pub fn add_kolom(&mut self, kolom: Vec<Kolom>) -> Result<(), String> {
+    pub fn add_kolom(&mut self, kolom: Kolom) -> Result<(), String> {
         add_kolom(self, kolom)?;
 
         Ok(())
@@ -77,7 +86,7 @@ impl Tabel {
 
     // delete satu baris (kemunculan pertama)
     pub fn delete_baris(&mut self, kolom: &str, nilai: TipeBaris) -> Result<(), String> {
-        let removed = delete_baris(self, kolom, nilai)?;
+        let removed = delete_baris(self, kolom, &nilai)?;
         println!("\nBaris removed..");
         show(&baris_to_tabel(vec![removed]));
 
@@ -95,20 +104,24 @@ impl Tabel {
 
     pub fn update_nilai(
         &mut self,
-        select_kolom: &str,
-        select_nilai: TipeBaris,
-        target_kolom: &str,
-        new_nilai: TipeBaris,
+        set_kolom: &str,
+        set_nilai: TipeBaris,
+        where_kolom: &str,
+        where_nilai: &TipeBaris,
     ) -> Result<(), String> {
-        let changed = update_nilai(self, select_kolom, select_nilai, target_kolom, new_nilai)?;
-        println!("\nBaris changed in Column: {}..", target_kolom);
-        show(&baris_to_tabel(changed));
+        let changed = update_nilai(self, set_kolom, set_nilai, where_kolom, where_nilai)?;
+        println!("\nBaris changed in Column: {}..", set_kolom);
+        show(&baris_to_tabel(vec![changed.0, changed.1]));
 
         Ok(())
     }
 
-    pub fn update_kolom_name(&mut self, select_kolom: &str, new_name: &str) -> Result<(), String> {
-        update_nama_kolom(self, select_kolom, new_name)?;
+    pub fn update_kolom_name(
+        &mut self,
+        set_new_name: &str,
+        where_kolom_name: &str,
+    ) -> Result<(), String> {
+        update_nama_kolom(self, set_new_name, where_kolom_name)?;
 
         Ok(())
     }

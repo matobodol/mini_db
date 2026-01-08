@@ -15,7 +15,7 @@ pub fn parse_to_tipe_baris(input: &str, tipe: &TipeKolom) -> Result<TipeBaris, S
         TipeKolom::Float => raw
             .parse::<f64>()
             .map(|v| TipeBaris::Float(v))
-            .map_err(|_| "type e float.".to_string()),
+            .map_err(|_| "type a float.".to_string()),
         TipeKolom::Date => chrono::NaiveDate::parse_from_str(raw, "%Y-%m-%d")
             .map(|v| TipeBaris::Date(v))
             .map_err(|_| "format date harus: YYYY-MM-DD.".to_string()),
